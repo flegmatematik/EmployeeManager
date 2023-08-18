@@ -1,0 +1,82 @@
+﻿@page "/position"
+@page "/position/{id:int}"
+@inject IEmployeeService EmployeeService
+
+@if (Id == null)
+{
+    <PageTitle>Create a new Position</PageTitle>
+    <h3>Create a new Position</h3>
+}
+else
+{
+    <PageTitle>Edit @position.PositionName position</PageTitle>
+    <h3>Edit @position.PositionName position</h3>
+}
+
+<EditForm Model="position" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    @if (errors.Count > 0)
+    {
+        <h2>Errors</h2>
+        <ul class="text-danger">
+            @foreach (var error in errors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    }
+    <div>
+        <label for="name">Name</label>
+        <InputText id="name" @bind-Value="position.PositionName" class="form-control"></InputText>
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">@editBtnText</button>
+    @if (Id != null)
+    {
+        <button type="submit" class="btn btn-danger" @onclick="DeletePosition">Delete Position</button>
+    }
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    string editBtnText = string.Empty;
+    Position position = new Position();
+    private List<string> errors = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        editBtnText = Id == null ? "Save new position" : "Save changes";
+        await EmployeeService.GetPositions();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id != null)
+        {
+            position = await EmployeeService.GetPositionById((int)Id);
+        }
+    }
+
+    async Task HandleSubmit()
+    {
+        if (Id == null)
+        {
+            await EmployeeService.CreatePosition(position);
+        }
+        else
+        {
+            await EmployeeService.UpdatePosition(position);
+        }
+    }
+
+    async Task DeletePosition()
+    {
+        await EmployeeService.DeletePosition(position.PositionId);
+    }
+
+}

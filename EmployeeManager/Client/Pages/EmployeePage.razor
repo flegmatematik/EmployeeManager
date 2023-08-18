@@ -1,0 +1,103 @@
+﻿@page "/employee"
+@page "/employee/{id:int}"
+@inject IEmployeeService EmployeeService
+
+
+@if (Id == null)
+{
+    <PageTitle>Create a new Employee</PageTitle>
+    <h3>Create a new Employee</h3>
+} 
+else
+{
+    <PageTitle>Edit @employee.Name</PageTitle>
+    <h3>Edit @employee.Name</h3>
+}
+
+<EditForm Model="employee" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="name">Name</label>
+        <InputText id="name" @bind-Value="employee.Name" class="form-control"></InputText>
+    </div>
+    <div>
+        <label for="surname">Surname</label>
+        <InputText id="surname" @bind-Value="employee.Surname" class="form-control"></InputText>
+    </div>
+    <div>
+        <label for="birthday">Birthday</label>
+        <InputDate id="birthday" @bind-Value="employee.BirthDate" class="form-control"></InputDate>
+    </div>
+    <div>
+        <label>Position</label><br />
+        <InputSelect @bind-Value="employee.PositionId" class="form-select">
+            @foreach (var position in EmployeeService.Positions)
+            {
+                <option value="@position.PositionId">@position.PositionName</option>
+            }
+        </InputSelect>
+    </div>
+    <div>
+        <label for="ipaddress">IP Address</label>
+        <InputText id="ipaddress" @bind-Value="employee.IPAddress" class="form-control"></InputText>
+    </div>
+    <div>
+        <label for="ipcountrycode">IP Country Code</label>
+        <InputText id="ipcountrycode" @bind-Value="employee.IPCountryCode" class="form-control" disabled="true"></InputText>
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">@editBtnText</button>
+    @if(Id != null)
+    {
+        <button type="submit" class="btn btn-danger" @onclick="DeleteEmployee">Delete Employee</button>
+    }
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    string editBtnText = string.Empty;
+
+    Employee employee = new Employee { Position = new Position() };
+
+    protected override async Task OnInitializedAsync()
+    {
+        editBtnText = Id == null ? "Save new employee" : "Save changes";
+        await EmployeeService.GetPositions();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id == null)
+        {
+            employee.Position = EmployeeService.Positions[0];
+            employee.PositionId = employee.Position.PositionId;
+        }
+        else
+        {
+            employee = await EmployeeService.GetEmployeeById((int)Id);
+        }
+    }
+
+    async Task HandleSubmit()
+    {
+        if(Id == null)
+        {
+            await EmployeeService.CreateEmployee(employee);
+        }
+        else
+        {
+            await EmployeeService.UpdateEmployee(employee);
+        }
+    }
+
+    async Task DeleteEmployee()
+    {
+        await EmployeeService.DeleteEmployee(employee.EmployeeId);
+    }
+
+}

@@ -1,0 +1,47 @@
+﻿@page "/positions"
+@inject IEmployeeService EmployeeService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Positions</PageTitle>
+
+<h3>Positions</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Position Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var position in EmployeeService.Positions)
+        {
+            <tr>
+                <td @onclick="(() => ShowPosition(position.PositionId))">@position.PositionName</td>
+                <td>
+                    <button class="btn btn-primary" @onclick="(() => ShowPosition(position.PositionId))"><i class="oi oi-pencil"></i></button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<button class="btn btn-primary" @onclick="CreateNewPosition">Create new position</button>
+
+
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await EmployeeService.GetPositions();
+    }
+
+    void ShowPosition(int id)
+    {
+        NavigationManager.NavigateTo($"position/{id}");
+    }
+
+    void CreateNewPosition()
+    {
+        NavigationManager.NavigateTo("/position");
+    }
+}

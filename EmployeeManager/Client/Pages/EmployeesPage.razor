@@ -1,0 +1,54 @@
+﻿@page "/employees"
+@page "/"
+@inject IEmployeeService EmployeeService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Employees</PageTitle>
+
+<h3>Employees</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Surname</th>
+            <th>Birth Date</th>
+            <th>Position</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var employee in EmployeeService.Employees)
+        {
+            <tr>
+                <td @onclick="(() => ShowEmployee(employee.EmployeeId))">@employee.Name</td>
+                <td @onclick="(() => ShowEmployee(employee.EmployeeId))">@employee.Surname</td>
+                <td>@employee.BirthDate.ToShortDateString()</td>
+                <td>@(employee.Position?.PositionName ?? "No assigned position")</td>
+                <td>
+                    <button class="btn btn-primary" @onclick="(() => ShowEmployee(employee.EmployeeId))"><i class="oi oi-pencil"></i></button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<button class="btn btn-primary" @onclick="CreateNewEmployee">Create new employee</button>
+
+
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await EmployeeService.GetEmployees();
+    }
+
+    void ShowEmployee(int id)
+    {
+        NavigationManager.NavigateTo($"employee/{id}");
+    }
+
+    void CreateNewEmployee()
+    {
+        NavigationManager.NavigateTo("/employee");
+    }
+}

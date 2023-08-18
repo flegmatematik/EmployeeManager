@@ -1,0 +1,41 @@
+﻿@page "/loadData"
+@using System.Text;
+@using System.Xml.Linq;
+@using Newtonsoft.Json;
+
+@inject IEmployeeService EmployeeService
+@inject IConfiguration Configuration
+
+<h3>Import Data</h3>
+
+@if(errors.Count > 0)
+{
+    <h2>Errors</h2>
+    <ul class="text-danger">
+        @foreach (var error in errors)
+        {
+            <li>@error</li>
+        }
+    </ul>
+}
+<div>
+    <label for="import">Please provide path for the JSON file</label>
+    <InputFile id="import" OnChange="@ImportFile" class="form-control"></InputFile>
+</div>
+<button type="submit" class="btn btn-danger standout">Import</button>
+
+@code {
+    private List<string> errors = new();
+
+    async Task ImportFile(InputFileChangeEventArgs e)
+    {
+        MemoryStream ms = new MemoryStream();
+        await e.File.OpenReadStream().CopyToAsync(ms);
+        var bytes = ms.ToArray();
+        string responseFromServer = System.Text.Encoding.Default.GetString(bytes);
+
+        JsonFile jsonData = JsonConvert.DeserializeObject<JsonFile>(responseFromServer);
+
+        await EmployeeService.ImportData(jsonData);
+    }
+}
